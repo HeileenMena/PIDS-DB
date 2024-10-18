@@ -1,0 +1,53 @@
+<html lang="en"><head>
+    <link href="Estilos.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuraciones ERBU Spare</title>
+</head>
+<body id="SPabu">
+    <div class="header" id="header">
+        <img src="foxconnlogo.png" alt="Logo de la Empresa" class="centered-image">
+    </div>
+	// Contenido de la página
+    <div class="content">
+        <div class="container">
+            <h2>Configuración Spare de PABU</h2>
+            <button onclick="location.href='home.html'">Volver</button>
+            <button id="addRecordBtn">Añadir registros</button>
+            <input type="text" id="searchInput" placeholder="Buscar por No. Parte..." onkeyup="searchPartNumber()">
+            <table id="dataTable">
+                <thead>
+                    <tr class="header-row">
+                        <th>CHASIS</th>
+                        <th>FAN</th>
+                        <th>POWER</th>
+                        <th>RSP</th>
+                        <th>IMA</th>
+                        <th>Editar</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ventana de diálogo para añadir registros -->
+    <div id="addRecordDialog" style="display:none;">
+        <div class="dialog-content">
+            <h2>Añadir nuevo registro</h2>
+            <div id="formFieldsContainer">
+                <!-- Los campos del formulario se generarán dinámicamente aquí -->
+            </div>
+            <button id="saveRecordBtn">Guardar</button>
+            <button id="cancelBtn">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <footer>
+        ©2024 Heileen Mena | All Rights Reserved
+    </footer>
+</body>
+</html>
