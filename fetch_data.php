@@ -37,7 +37,7 @@ switch ($page) {
         $columns = 'chasis, fan, power, rsp, ima';  // Columnas de SPabu
         break;
     case 'TestingPathPabu':
-        $table = 'testingpathpabu';  // Tabla para TestingPathPabu
+        $table = 'testpathrecords';  // Tabla para TestingPathPabu
         $columns = 'pid, sysassy, syshipot, sysft, test_station';  // Columnas de TestingPathPabu
         break;
     default:
