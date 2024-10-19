@@ -22,27 +22,27 @@ $page = isset($_GET['page']) ? $_GET['page'] : '';
 switch ($page) {
     case 'SErbu':
         $table = 'serburecords';  // Tabla para SErbu
-        $columns = 'chasis, fan, power, rsp, fc';  // Columnas de SErbu
+        $columns = 'id, chasis, fan, power, rsp, fc';  // Columnas de SErbu
         break;
     case 'SFretta':
         $table = 'sfrettarecords';  // Tabla para SFretta
-        $columns = 'chasis, fan, power';  // Columnas de SFretta
+        $columns = 'id, chasis, fan, power';  // Columnas de SFretta
         break;
     case 'SInsbu':
         $table = 'sinsburecords';   // Tabla para SInsbu
-        $columns = 'chasis, fan, power';  // Columnas de SInsbu
+        $columns = 'id, chasis, fan, power';  // Columnas de SInsbu
         break;
     case 'SPabu':
         $table = 'spaburecords';    // Tabla para SPabu
-        $columns = 'chasis, fan, power, rsp, ima';  // Columnas de SPabu
+        $columns = 'id, chasis, fan, power, rsp, ima';  // Columnas de SPabu
         break;
     case 'TestingPathPabu':
         $table = 'testpathrecords';  // Tabla para TestingPathPabu
-        $columns = 'pid, sysassy, syshipot, sysft, test_station';  // Columnas de TestingPathPabu
+        $columns = 'id, pid, sysassy, syshipot, sysft, test_station';  // Columnas de TestingPathPabu
         break;
     default:
         $table = 'serburecords';  // Tabla por defecto si no se proporciona un valor válido
-        $columns = 'chasis, fan, power, rsp, fc';  // Columnas por defecto
+        $columns = 'id, chasis, fan, power, rsp, fc';  // Columnas por defecto
         break;
 }
 

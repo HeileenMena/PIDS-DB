@@ -1,75 +1,78 @@
 <?php
-include 'db_connection.php';  // Conexión a la base de datos
+// Mostrar errores
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Verifica que la solicitud sea POST
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Recupera los valores enviados por el JavaScript
-    $id = $_POST['id'];  // ID del registro
-    $page = $_POST['page'];  // Página actual
-    $data = [];
+$servername = "localhost"; 
+$username = "root"; 
+$password = ""; 
+$dbname = "pids";
 
-    // Dependiendo de la página, recibimos diferentes campos
-    switch ($page) {
-        case 'SErbu':
-            $table = 'serburecords';
-            $data['chasis'] = $_POST['chasis'];
-            $data['fan'] = $_POST['fan'];
-            $data['power'] = $_POST['power'];
-            $data['rsp'] = $_POST['rsp'];
-            $data['fc'] = $_POST['fc'];
-            break;
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die(json_encode(["error" => "Conexión fallida: " . $conn->connect_error]));
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && isset($_POST['table'])) {
+    $recordId = (int)$_POST['id'];
+    $tableName = $_POST['table'];
+
+    // Crear la consulta de actualización según la tabla
+    $fields = [];
+    switch ($tableName) {
         case 'SFretta':
-            $table = 'sfrettarecords';
-            $data['chasis'] = $_POST['chasis'];
-            $data['fan'] = $_POST['fan'];
-            $data['power'] = $_POST['power'];
+            $fields = ['id', 'chasis', 'fan', 'power'];
+            break;
+        case 'SErbu':
+            $fields = ['id', 'chasis', 'fan', 'power', 'rsp', 'fc'];
             break;
         case 'SInsbu':
-            $table = 'sinsburecords';
-            $data['chasis'] = $_POST['chasis'];
-            $data['fan'] = $_POST['fan'];
-            $data['power'] = $_POST['power'];
+            $fields = ['id', 'chasis', 'fan', 'power'];
             break;
-        case 'SPabu':
-            $table = 'spaburecords';
-            $data['chasis'] = $_POST['chasis'];
-            $data['fan'] = $_POST['fan'];
-            $data['power'] = $_POST['power'];
-            $data['rsp'] = $_POST['rsp'];
-            $data['ima'] = $_POST['ima'];
+        case 'Spabu':
+            $fields = ['id', 'chasis', 'fan', 'power', 'rsp', 'ima'];
             break;
         case 'TestingPathPabu':
-            $table = 'testpathrecords';
-            $data['pid'] = $_POST['pid'];
-            $data['sysassy'] = $_POST['sysassy'];
-            $data['syshipot'] = $_POST['syshipot'];
-            $data['sysft'] = $_POST['sysft'];
-            $data['test_station'] = $_POST['test_station'];
+            $fields = ['id', 'pid', 'sysassy', 'syshipot', 'sysft', 'test_station'];
             break;
         default:
-            echo json_encode(['success' => false, 'message' => 'Página no soportada.']);
+            echo json_encode(['success' => false, 'message' => 'Tabla no permitida']);
             exit;
     }
 
-    // Realiza la consulta SQL de actualización
-    $setClause = "";
-    foreach ($data as $key => $value) {
-        // Aseguramos de escapar los valores para evitar inyecciones SQL
-        $value = $conn->real_escape_string($value);
-        $setClause .= "$key = '$value', ";
+    // Construir el SQL dinámicamente según los campos
+    $setClause = '';
+    foreach ($fields as $field) {
+        if (isset($_POST[$field])) {
+            $setClause .= "$field = ?, ";
+        }
     }
-    $setClause = rtrim($setClause, ', ');
+    $setClause = rtrim($setClause, ", ");  // Eliminar la coma final
 
-    $sql = "UPDATE $table SET $setClause WHERE id = '$id'";
+    $sql = "UPDATE $tableName SET $setClause WHERE id = ?";
 
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(['success' => true, 'message' => 'Registro actualizado con éxito.']);
+    if ($stmt = $conn->prepare($sql)) {
+        $types = str_repeat('s', count($fields)) . 'i'; // Asumiendo que los campos son strings y el ID es int
+        $params = [];
+        foreach ($fields as $field) {
+            $params[] = $_POST[$field];
+        }
+        $params[] = $recordId; // Añadir el ID al final
+        call_user_func_array([$stmt, 'bind_param'], array_merge([$types], $params));
+
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Registro actualizado']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar el registro']);
+        }
+        $stmt->close();
     } else {
-        echo json_encode(['success' => false, 'message' => 'Error al actualizar el registro: ' . $conn->error]);
+        echo json_encode(['success' => false, 'message' => 'Error al preparar la consulta']);
     }
-
-    $conn->close();
 } else {
-    echo json_encode(['success' => false, 'message' => 'Método de solicitud no permitido.']);
+    echo json_encode(['success' => false, 'message' => 'Faltan parámetros']);
 }
+
+$conn->close();
 ?>

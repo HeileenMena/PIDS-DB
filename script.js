@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchData(pageId);  // Envía el ID de la página como parámetro
 });
 
-//Función para cargar la información dependiendo la pagina que se abra
+// Función para cargar la información dependiendo de la página que se abra
 function fetchData(pageId) {
     // Enviar el parámetro de la página a PHP
     fetch(`fetch_data.php?page=${pageId}`)
@@ -20,11 +20,19 @@ function fetchData(pageId) {
             // Llenar la tabla con los datos
             data.forEach(item => {
                 const row = document.createElement('tr');
-                // Para cada página, los campos a mostrar son diferentes
                 let rowHTML = '';
+
+                // Para cada página, los campos a mostrar son diferentes
                 for (const key in item) {
                     rowHTML += `<td>${item[key]}</td>`;
                 }
+
+                // Agregar una nueva celda para el botón de editar
+                rowHTML += `<td><button class="btn btn-edit" onclick="editRecord(${item.id})">Editar</button></td>`;
+                
+                // Agregar una nueva celda para el botón de eliminar
+                rowHTML += `<td><button class="btn btn-delete" onclick="deleteRecord(${item.id}, '${pageId}')">Eliminar</button></td>`;
+
                 row.innerHTML = rowHTML;
                 tableBody.appendChild(row);
             });
@@ -32,6 +40,41 @@ function fetchData(pageId) {
         .catch(error => {
             console.error('Error al cargar los datos:', error);
         });
+}
+
+// Función para editar un registro
+function editRecord(recordId) {
+    alert(`Editando el registro con ID: ${recordId}`);
+}
+
+
+
+
+
+// Función para eliminar un registro
+function deleteRecord(recordId, tableName) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el registro con ID: ${recordId} de la tabla ${tableName}?`)) {
+        // Hacer una solicitud para eliminar el registro
+        fetch('delete_record.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${recordId}&table=${tableName}` // Enviamos tanto el ID como el nombre de la tabla
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Registro eliminado con éxito');
+                fetchData(tableName); // Recargar los datos de la tabla correspondiente
+            } else {
+                alert('Hubo un problema al eliminar el registro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error al eliminar el registro:', error);
+        });
+    }
 }
 
 // Función para dar de alta registros
@@ -136,16 +179,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
-
-
-
-
-
 // JavaScript para ocultar o mostrar la barra de inicio al hacer scroll
 var lastScrollTop = 0;
 var header = document.getElementById("header");
 
+// Ocultar la barra de inicio al hacer scroll hacia abajo
 window.addEventListener("scroll", function() {
     var currentScroll = window.pageYOffset || document.documentElement.scrollTop;
     if (currentScroll > lastScrollTop) {
