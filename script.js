@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);  // Agrega esta línea para ver la respuesta completa en la consola
             if (data.success && data.record) {
                 const record = data.record;
                 const fields = formFields[pageId];
@@ -84,8 +83,6 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(error => {
             console.error('Error al obtener el registro:', error);
         });
-        
-        
     };
 
     // Configurar los campos del formulario dinámicamente según la página
@@ -119,25 +116,62 @@ document.addEventListener('DOMContentLoaded', function () {
         'TestingPathPabu': ['pid', 'sysassy', 'syshipot', 'sysft', 'test_station']
     };
 
+    // Función para guardar los cambios
+    document.getElementById('saveEditRecordBtn').addEventListener('click', function () {
+        const pageId = document.body.id;
+        const fields = formFields[pageId];
+        const data = {};
+        let isValid = true;
+        let incompleteFields = [];
+
+        // Recolectar los valores de los campos del formulario
+        fields.forEach(field => {
+            const inputElement = document.getElementById(field + 'Input');
+            if (!inputElement.value) {
+                isValid = false;
+                incompleteFields.push(field);  // Guardar el campo vacío
+            }
+            data[field] = inputElement.value;
+        });
+
+        // Validar si algún campo está vacío
+        if (!isValid) {
+            const incompleteFieldsList = incompleteFields.map(field => field.toUpperCase()).join(', ');
+            const confirmMessage = `Faltan los siguientes campos: ${incompleteFieldsList}. ¿Desea continuar y actualizar el registro de todos modos?`;
+
+            if (!window.confirm(confirmMessage)) {
+                return;  // Si el usuario cancela, no enviamos los datos
+            }
+        }
+
+        // Enviar los datos al archivo PHP para actualizar el registro utilizando PUT
+        fetch('update_record.php', {
+            method: 'PUT',  // Cambiamos de POST a PUT
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `page=${pageId}&id=${currentRecordId}&${new URLSearchParams(data).toString()}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Registro actualizado con éxito.');
+                document.getElementById('editRecordDialog').style.display = 'none';  // Cerrar el modal
+                fetchData(pageId);  // Refrescar los datos de la tabla
+            } else {
+                alert('Error al actualizar el registro.');
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar el registro:', error);
+        });
+    });
+
     // Cerrar el modal cuando se presiona "Cancelar"
     document.getElementById('cancelEditBtn').addEventListener('click', function () {
         document.getElementById('editRecordDialog').style.display = 'none';
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Función para eliminar un registro
 function deleteRecord(recordId, tableName) {
@@ -314,3 +348,4 @@ function searchPartNumber() {
         }
     }
 }
+
