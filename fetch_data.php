@@ -17,6 +17,7 @@ if ($conn->connect_error) {
 
 // Obtener el parámetro 'page' desde la solicitud GET
 $page = isset($_GET['page']) ? $_GET['page'] : '';
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;  // Asegúrate de que el ID sea un entero válido
 
 // Establecer el nombre de la tabla y las columnas a consultar según el valor de 'page'
 switch ($page) {
@@ -46,8 +47,13 @@ switch ($page) {
         break;
 }
 
-// Consulta SQL dinámica
-$sql = "SELECT $columns FROM $table";
+// Si recibimos un ID válido, lo añadimos a la consulta
+if ($id > 0) {
+    $sql = "SELECT $columns FROM $table WHERE id = $id";
+} else {
+    $sql = "SELECT $columns FROM $table";
+}
+
 $result = $conn->query($sql);
 
 // Mostrar datos en formato JSON

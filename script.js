@@ -29,7 +29,7 @@ function fetchData(pageId) {
 
                 // Agregar una nueva celda para el botón de editar
                 rowHTML += `<td><button class="btn btn-edit" onclick="editRecord(${item.id})">Editar</button></td>`;
-                
+
                 // Agregar una nueva celda para el botón de eliminar
                 rowHTML += `<td><button class="btn btn-delete" onclick="deleteRecord(${item.id}, '${pageId}')">Eliminar</button></td>`;
 
@@ -42,10 +42,98 @@ function fetchData(pageId) {
         });
 }
 
-// Función para editar un registro
-function editRecord(recordId) {
-    alert(`Editando el registro con ID: ${recordId}`);
-}
+// Función para editar registros
+document.addEventListener('DOMContentLoaded', function () {
+    let currentRecordId = null;
+
+    // Función que se llama cuando se presiona el botón "Editar"
+    window.editRecord = function (recordId) {
+        const pageId = document.body.id;  // Obtiene el ID de la página actual (SErbu, etc.)
+        currentRecordId = recordId;  // Almacena el ID del registro editado
+
+        // Mostrar el modal de edición
+        document.getElementById('editRecordDialog').style.display = 'block';
+
+        // Configura el formulario de acuerdo a la página actual
+        setupEditForm(pageId);
+
+        // Realizar una solicitud a PHP para obtener los datos del registro
+        fetch('fetch_data1.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `page=${pageId}&id=${recordId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);  // Agrega esta línea para ver la respuesta completa en la consola
+            if (data.success && data.record) {
+                const record = data.record;
+                const fields = formFields[pageId];
+                fields.forEach(field => {
+                    const inputElement = document.getElementById(field + 'Input');
+                    if (inputElement && record[field] !== undefined) {
+                        inputElement.value = record[field];  // Asignar valor
+                    }
+                });
+            } else {
+                alert('No se encontraron los datos del registro.');
+            }
+        })
+        .catch(error => {
+            console.error('Error al obtener el registro:', error);
+        });
+        
+        
+    };
+
+    // Configurar los campos del formulario dinámicamente según la página
+    function setupEditForm(pageId) {
+        const fields = formFields[pageId];  // Obtiene los campos correspondientes
+        const formContainer = document.getElementById('editFormFieldsContainer');
+        formContainer.innerHTML = '';  // Limpia el formulario
+
+        fields.forEach(field => {
+            const label = document.createElement('label');
+            label.setAttribute('for', field + 'Input');
+            label.textContent = field.toUpperCase() + ':';  // Añade la etiqueta del campo
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = field + 'Input';
+            input.placeholder = 'Ingrese ' + field.toUpperCase();
+
+            formContainer.appendChild(label);
+            formContainer.appendChild(input);
+            formContainer.appendChild(document.createElement('br'));  // Añadir salto de línea
+        });
+    }
+
+    // Definir los campos para cada página
+    const formFields = {
+        'SErbu': ['chasis', 'fan', 'power', 'rsp', 'fc'],
+        'SFretta': ['chasis', 'fan', 'power'],
+        'SInsbu': ['chasis', 'fan', 'power'],
+        'SPabu': ['chasis', 'fan', 'power', 'rsp', 'ima'],
+        'TestingPathPabu': ['pid', 'sysassy', 'syshipot', 'sysft', 'test_station']
+    };
+
+    // Cerrar el modal cuando se presiona "Cancelar"
+    document.getElementById('cancelEditBtn').addEventListener('click', function () {
+        document.getElementById('editRecordDialog').style.display = 'none';
+    });
+});
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -62,18 +150,18 @@ function deleteRecord(recordId, tableName) {
             },
             body: `id=${recordId}&table=${tableName}` // Enviamos tanto el ID como el nombre de la tabla
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Registro eliminado con éxito');
-                fetchData(tableName); // Recargar los datos de la tabla correspondiente
-            } else {
-                alert('Hubo un problema al eliminar el registro: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error al eliminar el registro:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Registro eliminado con éxito');
+                    fetchData(tableName); // Recargar los datos de la tabla correspondiente
+                } else {
+                    alert('Hubo un problema al eliminar el registro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar el registro:', error);
+            });
     }
 }
 
@@ -147,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Si algún campo está vacío, pedir confirmación antes de guardar
         if (!isValid) {
-            const incompleteFieldsList = incompleteFields.map(field => field.toUpperCase()).join(', '); 
+            const incompleteFieldsList = incompleteFields.map(field => field.toUpperCase()).join(', ');
             const confirmMessage = `Faltan los siguientes campos: ${incompleteFieldsList}. ¿Desea continuar y guardar el registro de todos modos?`;
 
             if (!window.confirm(confirmMessage)) {
@@ -163,19 +251,19 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: `page=${pageId}&${new URLSearchParams(data).toString()}`
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Registro añadido con éxito.');
-                addRecordDialog.style.display = 'none';
-                fetchData(pageId);  // Refresca la tabla con los datos actualizados
-            } else {
-                alert('Error al añadir el registro.');
-            }
-        })
-        .catch(error => {
-            console.error('Error al añadir el registro:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Registro añadido con éxito.');
+                    addRecordDialog.style.display = 'none';
+                    fetchData(pageId);  // Refresca la tabla con los datos actualizados
+                } else {
+                    alert('Error al añadir el registro.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al añadir el registro:', error);
+            });
     });
 });
 
@@ -184,7 +272,7 @@ var lastScrollTop = 0;
 var header = document.getElementById("header");
 
 // Ocultar la barra de inicio al hacer scroll hacia abajo
-window.addEventListener("scroll", function() {
+window.addEventListener("scroll", function () {
     var currentScroll = window.pageYOffset || document.documentElement.scrollTop;
     if (currentScroll > lastScrollTop) {
         header.style.top = "-100px"; // Ocultar la barra de inicio al hacer scroll hacia abajo

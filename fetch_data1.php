@@ -1,5 +1,5 @@
 <?php
-// update_record.php
+// fetch_data1.php
 
 // Leer los datos del cuerpo de la solicitud
 parse_str(file_get_contents("php://input"), $data);
@@ -8,7 +8,7 @@ parse_str(file_get_contents("php://input"), $data);
 if (isset($data['id']) && isset($data['page'])) {
     $id = $data['id'];
     $page = $data['page'];
-    
+
     // Conexión a la base de datos (ajusta según tus parámetros de conexión)
     $conn = new mysqli('localhost', 'root', '', 'pids');
     
@@ -32,26 +32,25 @@ if (isset($data['id']) && isset($data['page'])) {
 
     // Obtener el nombre de la tabla correspondiente
     $tableName = $tableNames[$page];
+    // Depuración
+    error_log("ID recibido: $id");
+    error_log("Página recibida: $page");
 
-    // Construir la consulta de actualización
-    $fields = [];
-    foreach ($data as $key => $value) {
-        if ($key !== 'page' && $key !== 'id') {
-            $fields[] = "$key = '" . $conn->real_escape_string($value) . "'";
-        }
-    }
-
-    // Construir la consulta SQL para actualizar el registro
-    $setString = implode(', ', $fields);
-    $query = "UPDATE $tableName SET $setString WHERE id = ?";
+    
+    // Realizar la consulta para obtener los datos del registro
+    $query = "SELECT * FROM $tableName WHERE id = ?";
 
     // Preparar la consulta
     if ($stmt = $conn->prepare($query)) {
         $stmt->bind_param('i', $id);  // El ID debe ser un entero
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'Registro actualizado con éxito.']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_assoc();  // Obtener los datos del registro
+            echo json_encode(['success' => true, 'record' => $record]);  // Devolver el registro en JSON
         } else {
-            echo json_encode(['success' => false, 'message' => 'Error al actualizar el registro.']);
+            echo json_encode(['success' => false, 'message' => 'No se encontraron los datos del registro.']);
         }
         $stmt->close();
     } else {
