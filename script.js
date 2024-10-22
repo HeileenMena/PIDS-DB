@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchData(pageId);  // Envía el ID de la página como parámetro
 });
 
-// Función para cargar la información dependiendo de la página que se abra
 function fetchData(pageId) {
     // Enviar el parámetro de la página a PHP
     fetch(`fetch_data.php?page=${pageId}`)
@@ -22,9 +21,21 @@ function fetchData(pageId) {
                 const row = document.createElement('tr');
                 let rowHTML = '';
 
-                // Para cada página, los campos a mostrar son diferentes
+                // Iterar sobre las claves del objeto `item`
                 for (const key in item) {
-                    rowHTML += `<td>${item[key]}</td>`;
+                    let cellValue = item[key];
+                    let cellClass = ''; // Por defecto, no aplicar ninguna clase
+
+                    // Convertir los campos booleanos a palomita/cuadro vacío
+                    if (key === 'sysassy' || key === 'syshipot' || key === 'sysft') {
+                        cellValue = renderBoolean(cellValue); // Convertir el valor booleano
+                        if (cellValue === '<span class="checkmark">&#10004;</span>') {
+                            cellClass = 'true-value';  // Asignar la clase de fondo verde
+                            console.log(`Aplicando clase 'true-value' en la celda con valor: ${cellValue}`);
+                        }
+                    }
+
+                    rowHTML += `<td class="${cellClass}">${cellValue}</td>`;
                 }
 
                 // Agregar una nueva celda para el botón de editar
@@ -41,6 +52,19 @@ function fetchData(pageId) {
             console.error('Error al cargar los datos:', error);
         });
 }
+
+// Función para renderizar los valores booleanos
+function renderBoolean(value) {
+    if (value == 1) {
+        return '<span class="checkmark">&#10004;</span>';  // Palomita verde
+    } else {
+        return '';  // Celda vacía para el valor `false` (0)
+    }
+}
+
+
+
+
 
 // Función para editar registros
 document.addEventListener('DOMContentLoaded', function () {
