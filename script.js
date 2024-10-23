@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchData(pageId);  // Envía el ID de la página como parámetro
 });
 
+// Función para mostrar los registros en las tablas
 function fetchData(pageId) {
     // Enviar el parámetro de la página a PHP
     fetch(`fetch_data.php?page=${pageId}`)
@@ -64,8 +65,6 @@ function renderBoolean(value) {
 
 
 
-
-
 // Función para editar registros
 document.addEventListener('DOMContentLoaded', function () {
     let currentRecordId = null;
@@ -89,25 +88,26 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: `page=${pageId}&id=${recordId}`
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.record) {
-                const record = data.record;
-                const fields = formFields[pageId];
-                fields.forEach(field => {
-                    const inputElement = document.getElementById(field + 'Input');
-                    if (inputElement && record[field] !== undefined) {
-                        inputElement.value = record[field];  // Asignar valor
-                    }
-                });
-            } else {
-                alert('No se encontraron los datos del registro.');
-            }
-        })
-        .catch(error => {
-            console.error('Error al obtener el registro:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.record) {
+                    const record = data.record;
+                    const fields = formFields[pageId];
+                    fields.forEach(field => {
+                        const inputElement = document.getElementById(field + 'Input');
+                        if (inputElement && record[field] !== undefined) {
+                            inputElement.value = record[field];  // Asignar valor
+                        }
+                    });
+                } else {
+                    alert('No se encontraron los datos del registro.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener el registro:', error);
+            });
     };
+
 
     // Configurar los campos del formulario dinámicamente según la página
     function setupEditForm(pageId) {
@@ -142,6 +142,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para guardar los cambios
     document.getElementById('saveEditRecordBtn').addEventListener('click', function () {
+        // Credenciales correctas
+        const validUsername = "Prueba";
+        const validPassword = "Cisco987!";
+
+        // Pedir credenciales
+        const username = prompt("Ingrese su nombre de usuario:");
+        const password = prompt("Ingrese su contraseña:");
+
+        // Verificar las credenciales
+        if (username !== validUsername || password !== validPassword) {
+            alert("Credenciales incorrectas. No se puede guardar el registro.");
+            return;  // Detener la ejecución si las credenciales son incorrectas
+        }
+
         const pageId = document.body.id;
         const fields = formFields[pageId];
         const data = {};
@@ -176,20 +190,21 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: `page=${pageId}&id=${currentRecordId}&${new URLSearchParams(data).toString()}`
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Registro actualizado con éxito.');
-                document.getElementById('editRecordDialog').style.display = 'none';  // Cerrar el modal
-                fetchData(pageId);  // Refrescar los datos de la tabla
-            } else {
-                alert('Error al actualizar el registro.');
-            }
-        })
-        .catch(error => {
-            console.error('Error al actualizar el registro:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Registro actualizado con éxito.');
+                    document.getElementById('editRecordDialog').style.display = 'none';  // Cerrar el modal
+                    fetchData(pageId);  // Refrescar los datos de la tabla
+                } else {
+                    alert('Error al actualizar el registro.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar el registro:', error);
+            });
     });
+
 
     // Cerrar el modal cuando se presiona "Cancelar"
     document.getElementById('cancelEditBtn').addEventListener('click', function () {
@@ -199,27 +214,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Función para eliminar un registro
 function deleteRecord(recordId, tableName) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el registro con ID: ${recordId} de la tabla ${tableName}?`)) {
-        // Hacer una solicitud para eliminar el registro
-        fetch('delete_record.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `id=${recordId}&table=${tableName}` // Enviamos tanto el ID como el nombre de la tabla
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Registro eliminado con éxito');
-                    fetchData(tableName); // Recargar los datos de la tabla correspondiente
-                } else {
-                    alert('Hubo un problema al eliminar el registro: ' + data.message);
-                }
+    const username = prompt("Ingrese el nombre de usuario:");
+    const password = prompt("Ingrese la contraseña:");
+
+    // Credenciales correctas
+    const validUsername = "Prueba";
+    const validPassword = "Cisco987!";
+
+    // Verificar si las credenciales son correctas
+    if (username === validUsername && password === validPassword) {
+        // Si las credenciales son correctas, ejecutamos la acción
+        if (confirm(`¿Estás seguro de que quieres eliminar el registro con ID: ${recordId} de la tabla ${tableName}?`)) {
+            // Hacer una solicitud para eliminar el registro
+            fetch('delete_record.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id=${recordId}&table=${tableName}` // Enviamos tanto el ID como el nombre de la tabla
             })
-            .catch(error => {
-                console.error('Error al eliminar el registro:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Registro eliminado con éxito');
+                        fetchData(tableName); // Recargar los datos de la tabla correspondiente
+                    } else {
+                        alert('Hubo un problema al eliminar el registro: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al eliminar el registro:', error);
+                });
+        }
+    } else {
+        // Si las credenciales son incorrectas, mostrar mensaje de alerta
+        alert("Credenciales incorrectas. No tienes permiso para realizar esta acción.");
     }
 }
 
@@ -340,10 +369,25 @@ window.addEventListener("scroll", function () {
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // Para dispositivos moviles
 });
 
-// Funcion para buscar en la tabla por No. de Parte
+// Función para buscar en la tabla por No. de Parte
 function searchPartNumber() {
     var input = document.getElementById('searchInput');
     var filter = input.value.toUpperCase();
+
+    // Sanitizar la entrada eliminando "V0n" donde V puede ser cualquier letra y n del 1 al 9
+    filter = filter.replace(/[A-Z]0[1-9]/g, '').trim(); // Eliminar el patrón y recortar espacios
+
+    // Si el filtro está vacío, mostrar todos los registros
+    if (filter === "") {
+        var table = document.getElementById('dataTable');
+        var tr = table.getElementsByTagName('tr');
+
+        for (var i = 0; i < tr.length; i++) {
+            tr[i].style.display = ""; // Mostrar todas las filas
+        }
+        return; // Salir de la función
+    }
+
     var table = document.getElementById('dataTable');
     var tr = table.getElementsByTagName('tr');
 
@@ -372,4 +416,5 @@ function searchPartNumber() {
         }
     }
 }
+
 

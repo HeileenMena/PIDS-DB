@@ -48,10 +48,16 @@ if (isset($data['id']) && isset($data['page'])) {
 
         if ($result->num_rows > 0) {
             $record = $result->fetch_assoc();  // Obtener los datos del registro
+            // Asegurarse de que los booleanos sean representados como enteros
+            $record['SYSASSY'] = (int)$record['SYSASSY'];
+            $record['SYSHIPOT'] = (int)$record['SYSHIPOT'];
+            $record['SYSFT'] = (int)$record['SYSFT'];
+            
             echo json_encode(['success' => true, 'record' => $record]);  // Devolver el registro en JSON
         } else {
             echo json_encode(['success' => false, 'message' => 'No se encontraron los datos del registro.']);
         }
+        
         $stmt->close();
     } else {
         echo json_encode(['success' => false, 'message' => 'Error de preparación de consulta.']);
