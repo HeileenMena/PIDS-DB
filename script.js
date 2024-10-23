@@ -63,8 +63,6 @@ function renderBoolean(value) {
     }
 }
 
-
-
 // Función para editar registros
 document.addEventListener('DOMContentLoaded', function () {
     let currentRecordId = null;
@@ -304,54 +302,68 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Guardar los datos en la base de datos
     saveRecordBtn.addEventListener('click', function () {
-        const data = {};
-        const fields = formFields[pageId];
+        const username = prompt("Ingrese el nombre de usuario:");
+        const password = prompt("Ingrese la contraseña:");
 
-        // Recolectar los valores de los campos del formulario
-        let isValid = true; // Flag para verificar si todos los campos están completos
-        let incompleteFields = []; // Guardamos los campos incompletos
+        // Credenciales correctas
+        const validUsername = "Prueba";
+        const validPassword = "Cisco987!";
 
-        fields.forEach(field => {
-            const inputElement = document.getElementById(field + 'Input');
-            if (!inputElement.value) {
-                isValid = false; // Si hay algún campo vacío, es inválido
-                incompleteFields.push(field); // Guardamos el campo incompleto
-            }
-            data[field] = inputElement.value; // Guardamos el valor, aunque esté vacío
-        });
+        // Verificar si las credenciales son correctas
+        if (username === validUsername && password === validPassword) {
+            // Si las credenciales son correctas, ejecutamos la acción
+            const data = {};
+            const fields = formFields[pageId];
 
-        // Si algún campo está vacío, pedir confirmación antes de guardar
-        if (!isValid) {
-            const incompleteFieldsList = incompleteFields.map(field => field.toUpperCase()).join(', ');
-            const confirmMessage = `Faltan los siguientes campos: ${incompleteFieldsList}. ¿Desea continuar y guardar el registro de todos modos?`;
+            // Recolectar los valores de los campos del formulario
+            let isValid = true; // Flag para verificar si todos los campos están completos
+            let incompleteFields = []; // Guardamos los campos incompletos
 
-            if (!window.confirm(confirmMessage)) {
-                return; // Si el usuario cancela, no enviamos el registro
-            }
-        }
-
-        // Enviar los datos al archivo PHP usando fetch
-        fetch('add_record.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `page=${pageId}&${new URLSearchParams(data).toString()}`
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Registro añadido con éxito.');
-                    addRecordDialog.style.display = 'none';
-                    fetchData(pageId);  // Refresca la tabla con los datos actualizados
-                } else {
-                    alert('Error al añadir el registro.');
+            fields.forEach(field => {
+                const inputElement = document.getElementById(field + 'Input');
+                if (!inputElement.value) {
+                    isValid = false; // Si hay algún campo vacío, es inválido
+                    incompleteFields.push(field); // Guardamos el campo incompleto
                 }
-            })
-            .catch(error => {
-                console.error('Error al añadir el registro:', error);
+                data[field] = inputElement.value; // Guardamos el valor, aunque esté vacío
             });
-    });
+
+            // Si algún campo está vacío, pedir confirmación antes de guardar
+            if (!isValid) {
+                const incompleteFieldsList = incompleteFields.map(field => field.toUpperCase()).join(', ');
+                const confirmMessage = `Faltan los siguientes campos: ${incompleteFieldsList}. ¿Desea continuar y guardar el registro de todos modos?`;
+
+                if (!window.confirm(confirmMessage)) {
+                    return; // Si el usuario cancela, no enviamos el registro
+                }
+            }
+
+            // Enviar los datos al archivo PHP usando fetch
+            fetch('add_record.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `page=${pageId}&${new URLSearchParams(data).toString()}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Registro añadido con éxito.');
+                        addRecordDialog.style.display = 'none';
+                        fetchData(pageId);  // Refresca la tabla con los datos actualizados
+                    } else {
+                        alert('Error al añadir el registro.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al añadir el registro:', error);
+                });
+            } else {
+                // Si las credenciales son incorrectas, mostrar mensaje de alerta
+                alert("Credenciales incorrectas. No tienes permiso para realizar esta acción.");
+            }
+        });
 });
 
 // JavaScript para ocultar o mostrar la barra de inicio al hacer scroll

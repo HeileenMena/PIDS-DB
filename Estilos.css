@@ -118,3 +118,10 @@ td.true-value {
     font-weight: bold;
     padding: 5px;
 }
+
+.header-row {
+  position: sticky; /* Mantiene la fila fija al hacer scroll */
+  top: 0; /* Mantiene la fila en la parte superior */
+  background-color: #f2f2f2; /* Asegúrate de que el fondo sea visible */
+  z-index: 350; /* Asegura que esté por encima de otras filas */
+}
