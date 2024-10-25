@@ -68,17 +68,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentRecordId = null;
 
     // Función que se llama cuando se presiona el botón "Editar"
+    // Función para editar registros
     window.editRecord = function (recordId) {
-        const pageId = document.body.id;  // Obtiene el ID de la página actual (SErbu, etc.)
-        currentRecordId = recordId;  // Almacena el ID del registro editado
+        const pageId = document.body.id;
+        currentRecordId = recordId;
 
-        // Mostrar el modal de edición
         document.getElementById('editRecordDialog').style.display = 'block';
 
-        // Configura el formulario de acuerdo a la página actual
         setupEditForm(pageId);
 
-        // Realizar una solicitud a PHP para obtener los datos del registro
         fetch('fetch_data1.php', {
             method: 'POST',
             headers: {
@@ -88,15 +86,19 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
+                console.log("Devuelvo el siguiente JSON:", data); // Verifica lo que se devuelve
                 if (data.success && data.record) {
                     const record = data.record;
                     const fields = formFields[pageId];
                     fields.forEach(field => {
                         const inputElement = document.getElementById(field + 'Input');
                         if (inputElement && record[field] !== undefined) {
-                            inputElement.value = record[field];  // Asignar valor
+                            console.log(`${field}: `, record[field]); // Verifica el valor
+                            inputElement.value = record[field] || ''; // Asigna el valor
                         }
                     });
+                    // Desplazar a la posición del modal
+                    document.getElementById('editRecordDialog').scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert('No se encontraron los datos del registro.');
                 }
@@ -207,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cerrar el modal cuando se presiona "Cancelar"
     document.getElementById('cancelEditBtn').addEventListener('click', function () {
         document.getElementById('editRecordDialog').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Desplazarse al inicio de la página
     });
 });
 
@@ -293,11 +296,15 @@ document.addEventListener('DOMContentLoaded', function () {
     addRecordBtn.addEventListener('click', function () {
         setupForm();  // Configura el formulario según la página actual
         addRecordDialog.style.display = 'block';
+
+        // Desplazar a la posición del modal
+        addRecordDialog.scrollIntoView({ behavior: 'smooth' });
     });
 
     // Cerrar el modal cuando se presiona "Cancelar"
     cancelBtn.addEventListener('click', function () {
         addRecordDialog.style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Desplazarse al inicio de la página
     });
 
     // Guardar los datos en la base de datos
@@ -359,11 +366,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(error => {
                     console.error('Error al añadir el registro:', error);
                 });
-            } else {
-                // Si las credenciales son incorrectas, mostrar mensaje de alerta
-                alert("Credenciales incorrectas. No tienes permiso para realizar esta acción.");
-            }
-        });
+        } else {
+            // Si las credenciales son incorrectas, mostrar mensaje de alerta
+            alert("Credenciales incorrectas. No tienes permiso para realizar esta acción.");
+        }
+    });
 });
 
 // JavaScript para ocultar o mostrar la barra de inicio al hacer scroll
@@ -380,6 +387,7 @@ window.addEventListener("scroll", function () {
     }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // Para dispositivos moviles
 });
+
 
 // Función para buscar en la tabla por No. de Parte
 function searchPartNumber() {
@@ -428,5 +436,4 @@ function searchPartNumber() {
         }
     }
 }
-
 

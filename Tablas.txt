@@ -2,7 +2,7 @@ SFretta: ID, CHASIS, FAN y POWER
 SErbu: ID, CHASIS, FAN, POWER, RSP, FC
 SInsbu: ID, CHASIS, FAN, POWER
 Spabu: ID, CHASIS, FAN, POWER, RSP, IMA
-TestingPathPabu: ID, PID, SYSASSY, SYSHIPOT, SYSFT, TEST_STATION
+TestingPathPabu: ID, PID, SYSASSY (booleano), SYSHIPOT (booleano), SYSFT (booleano), TEST_STATION 
 
 SErbu: serburecords
 SFretta: sfrettarecords
